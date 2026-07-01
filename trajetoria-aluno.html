@@ -252,14 +252,8 @@
 
           <div class="card" style="margin-top:16px;">
             <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">Trajetória do aluno</h3>
-            <div class="footnote" style="margin:0 0 14px;">Radar de competências do ciclo mais recente. Clique numa competência abaixo do esperado pra ver boas práticas de orientadores.</div>
+            <div class="footnote" style="margin:0 0 14px;">Cada ciclo tem sua própria habilidade-foco. Clique numa abaixo do esperado pra ver boas práticas de orientadores.</div>
             <div id="fichaAluno"></div>
-          </div>
-
-          <div class="card" style="margin-top:16px;">
-            <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">Heatmap: ciclo × competência</h3>
-            <div id="heatmapAluno" style="margin-top:10px;"></div>
-            <div class="footnote">Escala 0 (claro) a 4 (escuro). Quanto mais escuro, mais consistente a competência naquele ciclo.</div>
           </div>
         </div>
       </div>
@@ -451,7 +445,6 @@ function renderAluno(key){
   document.getElementById('tiersHistorico').innerHTML = a.ciclos.map(function(c){ return '<span class="chip '+tierClasse(c.tier)+'">Ciclo '+c.n+': '+c.tier+'</span>'; }).join('');
 
   renderFicha(key);
-  renderHeatmap(key);
 }
 
 let chartRadar;
@@ -465,51 +458,43 @@ function renderFicha(key){
     return '<div class="tier-step '+cls+'">'+etapa+'<span class="st">'+status+'</span></div>';
   }).join('');
 
+  const temas = calendario[a.turma];
+  const EIXO_POR_CICLO = ['aprendizagem','autonomia','relacionamento','protagonismo'];
+  const medias = a.ciclos.map(function(c){ return HABILIDADES.reduce(function(s,h){ return s+c.rubrica[h.key]; },0)/HABILIDADES.length; });
+
   const ultimoCiclo = a.ciclos[a.ciclos.length-1];
-  const ultimo = ultimoCiclo.rubrica;
-  const mediaGeral = HABILIDADES.reduce(function(s,h){ return s+ultimo[h.key]; },0)/HABILIDADES.length;
+  const mediaGeral = medias[medias.length-1];
   let recClasse='rec-atencao', recTexto='Ainda não recomenda para o ES · acompanhamento prioritário';
   if(mediaGeral>=3.3){ recClasse='rec-ok'; recTexto='Recomendado para o próximo ciclo (Ensino Superior/Médio)'; }
   else if(mediaGeral>=2.3){ recClasse='rec-ressalva'; recTexto='Recomendado com ressalvas · manter acompanhamento'; }
 
-  const dentro = HABILIDADES.filter(function(h){ return ultimo[h.key]>=3; });
-  const abaixo = HABILIDADES.filter(function(h){ return ultimo[h.key]<3; });
+  const porCiclo = temas.map(function(tema, i){ return {tema:tema, n:i+1, media:medias[i], eixo:EIXO_POR_CICLO[i]}; });
+  const dentro = porCiclo.filter(function(x){ return x.media>=3; });
+  const abaixo = porCiclo.filter(function(x){ return x.media<3; });
 
   document.getElementById('fichaAluno').innerHTML =
     '<div class="tiers-strip">'+tiersHtml+'</div>' +
     '<div class="recomendacao-badge '+recClasse+'">'+recTexto+'</div>' +
     '<div class="campo"><b>Escolha de curso (indicação)</b>'+a.area+(a.curso!=='indicação em aberto' ? ' · '+a.curso : ' · a definir')+'</div>' +
+    '<div class="footnote" style="margin:0 0 8px;">Cada ciclo tem sua própria habilidade-foco (ex.: Adaptação só aparece no Ciclo 1). O gráfico mostra a média de rubrica alcançada em cada uma, na ordem em que aconteceram.</div>' +
     '<canvas id="chartCompetencias" height="220"></canvas>' +
     '<div class="esperado-cols">' +
       '<div><div class="footnote" style="margin:0 0 6px;"><b>Dentro do esperado</b></div>' +
-      '<ul class="esperado-list">'+dentro.map(function(h){ return '<li><span class="ok">●</span> '+h.lbl+' ('+ultimo[h.key]+'/4)</li>'; }).join('')+'</ul></div>' +
+      '<ul class="esperado-list">'+(dentro.length ? dentro.map(function(x){ return '<li><span class="ok">●</span> '+x.tema+' ('+pt(x.media)+'/4)</li>'; }).join('') : '<li>Nenhum ciclo dentro do esperado ainda.</li>')+'</ul></div>' +
       '<div><div class="footnote" style="margin:0 0 6px;"><b>Abaixo do esperado</b></div>' +
-      '<ul class="esperado-list">'+(abaixo.length ? abaixo.map(function(h){ return '<li onclick="toggleSolucoes(\''+h.eixo+'\',\'fichaBaixo\')"><span class="baixo">●</span> '+h.lbl+' ('+ultimo[h.key]+'/4) <span class="ver-solucoes">ver soluções ›</span></li><div class="solucoes-box" id="sol-fichaBaixo-'+h.eixo+'"><ul>'+dossieSolucoes[h.eixo].map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul></div>'; }).join('') : '<li>Nenhuma competência abaixo do esperado.</li>')+'</ul></div>' +
+      '<ul class="esperado-list">'+(abaixo.length ? abaixo.map(function(x){ return '<li onclick="toggleSolucoes(\''+x.eixo+'\',\'fichaBaixo\')"><span class="baixo">●</span> '+x.tema+' ('+pt(x.media)+'/4) <span class="ver-solucoes">ver soluções ›</span></li><div class="solucoes-box" id="sol-fichaBaixo-'+x.eixo+'"><ul>'+dossieSolucoes[x.eixo].map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul></div>'; }).join('') : '<li>Nenhuma habilidade abaixo do esperado.</li>')+'</ul></div>' +
     '</div>' +
     '<div class="reading" style="margin-top:14px;"><b>Ações e intervenções recomendadas:</b> '+a.leitura+'</div>';
 
   if(chartRadar) chartRadar.destroy();
   chartRadar = new Chart(document.getElementById('chartCompetencias'), {
     type:'line',
-    data:{ labels: HABILIDADES.map(function(h){ return h.lbl; }), datasets:[
-      {label:'Ciclo '+ultimoCiclo.n+' (mais recente)', data: HABILIDADES.map(function(h){ return ultimo[h.key]; }), borderColor:'#008ED3', backgroundColor:'rgba(0,142,211,0.1)', fill:true, tension:.3, pointRadius:5, pointBackgroundColor:'#002561'},
-      {label:'Esperado mínimo', data: HABILIDADES.map(function(){ return 3; }), borderColor:'#B9C2D0', borderDash:[4,4], pointRadius:0, fill:false}
+    data:{ labels: temas, datasets:[
+      {label:'Média de rubrica por ciclo', data: medias, borderColor:'#008ED3', backgroundColor:'rgba(0,142,211,0.1)', fill:true, tension:.3, pointRadius:5, pointBackgroundColor:'#002561'},
+      {label:'Esperado mínimo', data: temas.map(function(){ return 3; }), borderColor:'#B9C2D0', borderDash:[4,4], pointRadius:0, fill:false}
     ]},
     options:{ scales:{ y:{min:0, max:4, ticks:{stepSize:1}} }, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10.5}}}} }
   });
-}
-
-function renderHeatmap(key){
-  const a = alunos[key];
-  const header = '<div class="heatmap"><div></div>' + a.ciclos.map(function(c){ return '<div class="collbl">Ciclo '+c.n+'</div>'; }).join('') + '</div>';
-  const linhas = HABILIDADES.map(function(h){
-    const cells = a.ciclos.map(function(c){
-      const v = c.rubrica[h.key];
-      return '<div class="cell rv-'+v+'">'+v+'</div>';
-    }).join('');
-    return '<div class="heatmap"><div class="rowlbl">'+h.lbl+'</div>'+cells+'</div>';
-  }).join('');
-  document.getElementById('heatmapAluno').innerHTML = header + linhas;
 }
 
 document.getElementById('anoFilter').addEventListener('change', function(e){ const nomes = popularAlunoSelect(e.target.value); renderAluno(nomes[0]); });
