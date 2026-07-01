@@ -322,28 +322,11 @@
   </section>
 
   <section class="panel" id="panel-c">
-    <div class="lede"><div><h2>Radar de alerta</h2><p>Cruza participação e entrega do Mão na Massa do Ciclo 1 pra classificar o aluno num tier de cuidado, antes que vire evasão.</p></div></div>
-    <div class="grid cols-4" style="margin-bottom:18px;">
-      <div class="card kpi" style="border-top-color:#00BCF2;"><div class="lbl">Alunos avaliados (Ciclo 1, SP)</div><div class="num">291</div></div>
-      <div class="card kpi" style="border-top-color:var(--pink);"><div class="lbl">Tier 3C · Cuidado e Acadêmico</div><div class="num" style="color:var(--pink);">14</div><div class="delta" style="color:var(--pink);">5% dos alunos</div></div>
-      <div class="card kpi" style="border-top-color:#8A5300;"><div class="lbl">Sinais de baixa participação</div><div class="num" style="color:#8A5300;">3</div><div class="delta" style="color:#8A5300;">1% dos alunos</div></div>
-      <div class="card kpi" style="border-top-color:var(--muted2);"><div class="lbl">Tier 4 · Ideação sensível</div><div class="num" style="color:var(--muted);">—</div><div class="delta">avaliação humana, fora deste painel</div></div>
+    <div class="lede"><div><h2>Radar de alerta</h2><p>Sinais de baixa participação e entrega, organizados por tier de cuidado.</p></div></div>
+    <div class="card">
+      <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">Em construção — próximos passos</h3>
+      <div class="em-breve">Este módulo ainda está em desenvolvimento. Disponível em breve.</div>
     </div>
-    <div class="card" style="margin-bottom:18px; background:var(--skypale);">
-      <div style="font-size:12.5px; color:var(--navy); line-height:1.6;"><b>Sobre os tiers:</b> Tier 1 e 2 são engajamento leve e acompanhamento moderado. Tier 3C cruza baixa entrega com queda de rubrica. <b>Tier 4 não é calculado por este painel</b> — sinais de saúde mental vêm do formulário individual e da entrevista, sempre triados por pessoa da equipe psicossocial.</div>
-    </div>
-    <div class="grid cols-2">
-      <div class="card"><h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">% em Tier 3C por escola (amostra com 15+ alunos)</h3><canvas id="chartRiscoEscola" height="230"></canvas></div>
-      <div class="card"><h3 style="margin:0 0 10px; font-size:14px; color:var(--navy);">Casos de baixa participação (Ciclo 1)</h3>
-        <table><thead><tr><th>Aluno</th><th>Orientador(a)</th><th>Escola</th></tr></thead><tbody id="riscoParticipacaoTable"></tbody></table>
-        <div class="footnote">Nomes de orientador(a) anonimizados nesta tela de protótipo.</div>
-      </div>
-    </div>
-    <div class="card" style="margin-top:16px;">
-      <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">Próximos passos de desenvolvimento</h3>
-      <div class="em-breve">Em construção — disponível em breve.</div>
-    </div>
-    <div class="footnote">Fonte: Lista de Presença Ciclos SP, aba Ciclo 1.</div>
   </section>
 
   <section class="panel" id="panel-d">
@@ -635,17 +618,6 @@ function renderStudentCards(){
         '<div class="reading">'+a.leitura+'</div></div>';
     }).join('');
 }
-
-new Chart(document.getElementById('chartRiscoEscola'), {
-  type:'bar', data:{ labels:['Rio Branco Higienópolis','Magno','Uirapuru','Rio Branco Granja Viana','Lourenço Castanho VNC','Bandeirantes','Lourenço Castanho ABV'],
-    datasets:[{ label:'% em Tier 3C', data:[5.0,4.2,3.8,2.6,2.1,1.4,0.5], backgroundColor:['#ED2D67','#F1655D','#F1655D','#FFB577','#FFB577','#00BCF2','#8EC5B1'] }] },
-  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{max:8}} }
-});
-document.getElementById('riscoParticipacaoTable').innerHTML = [
-  ["Julia Santos do Nascimento","Orientador(a) 1","Bandeirantes"],["Laura Rodrigues Queiroz da Silva","Orientador(a) 1","Bandeirantes"],
-  ["Manuela Miura de Oliveira","Orientador(a) 1","Bandeirantes"],["Pietro João Ferreira da Silva","Orientador(a) 1","Bandeirantes"],
-  ["Pyettro Alexandre Felix Correa","Orientador(a) 1","Bandeirantes"],["Mayara Ferreira Moura","Orientador(a) 2","Rio Branco · Granja Viana"]
-].map(function(r){ return '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>'; }).join('');
 
 // ===================== PORTFÓLIO DO ALUNO =====================
 function popularPortfolioSelect(){
