@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trajetória PDEB · Protótipo Hackathon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Lato:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#002561;
+    --blue:#008ED3;
+    --sky:#00BCF2;
+    --skylight:#9CDCF8;
+    --skypale:#D4EEFC;
+    --pink:#ED2D67;
+    --coral:#F1655D;
+    --plum:#924A7C;
+    --lime:#EBEA70;
+    --teal:#8EC5B1;
+    --bg:#F7F9FC;
+    --card:#FFFFFF;
+    --ink:#0E1B33;
+    --muted:#5B6B85;
+    --line:#E4EAF3;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Lato',sans-serif;
+  }
+  h1,h2,h3,.mono-label{font-family:'Montserrat',sans-serif;}
+  header{
+    background:var(--navy); color:#fff; padding:22px 32px;
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+  }
+  header .brand{display:flex; align-items:center; gap:14px;}
+  header .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--pink);}
+  header h1{font-size:19px; margin:0; font-weight:700; letter-spacing:.2px;}
+  header p{margin:2px 0 0; font-size:12.5px; color:var(--skylight); font-weight:500;}
+  .badge-total{
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+    padding:8px 14px; border-radius:10px; font-size:12.5px; display:flex; gap:18px;
+  }
+  .badge-total b{font-size:15px; display:block; font-family:'Montserrat',sans-serif;}
+
+  nav{
+    display:flex; gap:6px; padding:14px 32px 0; background:var(--bg);
+    border-bottom:1px solid var(--line);
+  }
+  nav button{
+    font-family:'Montserrat',sans-serif; font-weight:600; font-size:13px;
+    background:transparent; border:none; padding:12px 18px; cursor:pointer;
+    color:var(--muted); border-radius:10px 10px 0 0; display:flex; align-items:center; gap:8px;
+    position:relative; top:1px;
+  }
+  nav button .step{
+    width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--muted);
+    font-size:11px; display:flex; align-items:center; justify-content:center; font-weight:700;
+  }
+  nav button.active{color:var(--navy); background:var(--card); border:1px solid var(--line); border-bottom:1px solid var(--card);}
+  nav button.active .step{background:var(--pink); color:#fff;}
+
+  main{padding:26px 32px 60px; max-width:1280px; margin:0 auto;}
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+
+  .lede{display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:20px; flex-wrap:wrap;}
+  .lede h2{font-size:22px; margin:0 0 6px; color:var(--navy);}
+  .lede p{margin:0; color:var(--muted); font-size:13.5px; max-width:620px; line-height:1.5;}
+  .tag{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+    padding:5px 10px; border-radius:6px; font-family:'Montserrat',sans-serif;
+  }
+  .tag.real{background:var(--skypale); color:var(--navy);}
+  .tag.demo{background:#FFF1E0; color:#8A5300;}
+  .tag.pend{background:#FDEAEE; color:var(--pink);}
+
+  .grid{display:grid; gap:16px;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-2{grid-template-columns:2fr 1fr;}
+  @media(max-width:980px){ .grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px 20px;
+  }
+  .kpi .num{font-family:'Montserrat',sans-serif; font-size:28px; font-weight:800; color:var(--navy);}
+  .kpi .lbl{font-size:12px; color:var(--muted); margin-top:2px;}
+  .kpi .delta{font-size:12px; font-weight:700; margin-top:6px;}
+  .delta.up{color:#1a8f4c;}
+
+  canvas{max-width:100%;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  th{
+    text-align:left; font-family:'Montserrat',sans-serif; font-size:11px; text-transform:uppercase;
+    letter-spacing:.4px; color:var(--muted); padding:8px 10px; border-bottom:2px solid var(--line);
+  }
+  td{padding:10px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  .bar-wrap{background:var(--skypale); border-radius:6px; height:8px; width:120px; overflow:hidden; display:inline-block;}
+  .bar-fill{height:100%; background:var(--blue); border-radius:6px;}
+
+  .axis-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:var(--muted);}
+  .axis-legend span{display:flex; align-items:center; gap:6px;}
+  .axis-legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+  .student-card{border:1px solid var(--line); border-radius:14px; padding:16px 18px; background:var(--card);}
+  .student-card .head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;}
+  .student-card .head h4{margin:0; font-size:15px; color:var(--navy);}
+  .student-card .head .rank{font-family:'Montserrat',sans-serif; font-weight:800; color:var(--pink); font-size:13px;}
+  .student-card .meta{font-size:11.5px; color:var(--muted); margin-bottom:10px;}
+  .chip{font-size:11px; padding:3px 9px; border-radius:20px; font-weight:700; margin-right:6px;}
+  .chip.area{background:var(--skypale); color:var(--navy);}
+  .chip.carga-alta{background:#FDEAEE; color:var(--pink);}
+  .chip.carga-media{background:#FFF3D6; color:#8A5300;}
+  .chip.carga-baixa{background:#E7F6ED; color:#1a8f4c;}
+  .mini-axis{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--muted); margin:4px 0;}
+  .mini-axis .track{flex:1; height:6px; background:var(--skypale); border-radius:4px; overflow:hidden;}
+  .mini-axis .fill{height:100%; border-radius:4px;}
+  .reading{
+    background:var(--bg); border-left:3px solid var(--blue); padding:10px 12px; border-radius:0 8px 8px 0;
+    font-size:12.5px; color:var(--ink); margin-top:12px; line-height:1.5;
+  }
+
+  .locked{
+    text-align:center; padding:60px 30px; border:2px dashed var(--line); border-radius:16px; background:var(--card);
+  }
+  .locked h3{color:var(--navy); font-size:18px; margin-bottom:8px;}
+  .locked p{color:var(--muted); font-size:13.5px; max-width:560px; margin:0 auto 18px;}
+  .req-list{
+    display:inline-flex; flex-direction:column; gap:8px; text-align:left; margin:0 auto;
+  }
+  .req-list li{list-style:none; font-size:13px; display:flex; gap:8px; align-items:center; color:var(--ink);}
+  .req-list li .dot{width:7px;height:7px;border-radius:50%; background:var(--pink); flex-shrink:0;}
+
+  .footnote{font-size:11.5px; color:var(--muted); margin-top:10px; line-height:1.5;}
+  select{
+    font-family:'Lato',sans-serif; font-size:13px; padding:7px 10px; border-radius:8px; border:1px solid var(--line);
+    background:#fff; color:var(--ink);
+  }
+  .subtab{
+    font-family:'Montserrat',sans-serif; font-weight:600; font-size:12.5px; padding:8px 14px; border-radius:8px;
+    border:1px solid var(--line); background:#fff; color:var(--muted); cursor:pointer;
+  }
+  .subtab.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .aluno-head{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  .aluno-head h3{margin:0; font-size:17px; color:var(--navy);}
+  .aluno-head .meta{font-size:12.5px; color:var(--muted); margin-top:3px;}
+  .ciclo-row{display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); align-items:flex-start;}
+  .ciclo-row:last-child{border-bottom:none;}
+  .ciclo-num{
+    width:26px; height:26px; border-radius:50%; background:var(--skypale); color:var(--navy);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; flex-shrink:0;
+    font-family:'Montserrat',sans-serif;
+  }
+  .ciclo-num.pend{background:var(--line); color:var(--muted);}
+  .ciclo-body .tema{font-weight:700; font-size:13px; color:var(--ink);}
+  .ciclo-body .detail{font-size:12px; color:var(--muted); margin-top:3px; line-height:1.5;}
+  .status-chip{font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:6px;}
+  .status-chip.entregou{background:#E7F6ED; color:#1a8f4c;}
+  .status-chip.parcial{background:#FFF3D6; color:#8A5300;}
+  .status-chip.nao{background:#FDEAEE; color:var(--pink);}
+  .status-chip.pend{background:var(--line); color:var(--muted);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="dot"></div>
+    <div>
+      <h1>Trajetória PDEB — protótipo de hackathon</h1>
+      <p>Linha do tempo · Radar do comitê · Alerta de retenção</p>
+    </div>
+  </div>
+  <div class="badge-total">
+    <div><b>715</b>alunos PDEB 2026</div>
+    <div><b>4</b>praças</div>
+    <div><b>3</b>módulos</div>
+  </div>
+</header>
+
+<nav>
+  <button class="active" data-panel="a"><span class="step">1</span> Linha do tempo</button>
+  <button data-panel="b"><span class="step">2</span> Radar do comitê</button>
+  <button data-panel="c"><span class="step">3</span> Alerta de retenção</button>
+</nav>
+
+<main>
+
+  <!-- ===================== MÓDULO A ===================== -->
+  <section class="panel active" id="panel-a">
+    <div class="lede">
+      <div>
+        <h2>Linha do tempo do aluno <span class="tag real">dado real de presença · nota simulada</span></h2>
+        <p>Agora com RA de verdade: a planilha de presença de SP traz nome, participação e Mão na Massa por aluno. As notas acadêmicas (média da escola + Prova Única) ainda não têm fonte real, então estão simuladas 2023-2026 pra mostrar o formato do cruzamento.</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="subtab active" data-sub="individual">Aluno individual</button>
+        <button class="subtab" data-sub="praca">Visão agregada</button>
+      </div>
+    </div>
+
+    <!-- SUBVIEW: ALUNO INDIVIDUAL -->
+    <div id="sub-individual">
+      <div class="grid cols-2" style="margin-bottom:16px; align-items:start;">
+        <div></div>
+        <select id="alunoFilter" style="justify-self:end;">
+          <option value="eriana">Eriana Paula Loreana Narvaez Itriago · 1º EM</option>
+          <option value="joaopedro">João Pedro Pinheiro da Silva · 2º EM</option>
+          <option value="laura">Laura Rodrigues Queiroz da Silva · 2º EM</option>
+        </select>
+      </div>
+
+      <div class="card" style="margin-bottom:16px;">
+        <div id="alunoHeader"></div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin:0 0 10px; font-size:14px; color:var(--navy);">Ciclos PDEB 2026 · engajamento e entrega</h3>
+          <div id="ciclosTimeline"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">Evolução acadêmica <span class="tag demo" style="margin-left:6px;">simulado</span></h3>
+          <canvas id="chartAcademico" height="220"></canvas>
+        </div>
+      </div>
+      <div class="footnote">
+        Fonte real: Lista de Presença Ciclos SP, Ciclo 1 (fechado) e Ciclo 2 (em andamento). Temas dos ciclos vêm do Calendário Acadêmico PDEB 2026 por série. Médias escolares e Prova Única são simuladas até termos a fonte real de notas.
+      </div>
+    </div>
+
+    <!-- SUBVIEW: AGREGADO POR PRAÇA -->
+    <div id="sub-praca" style="display:none;">
+      <div class="grid cols-4" style="margin-bottom:18px;">
+        <div class="card kpi">
+          <div class="lbl">1º EM · Autonomia e Autogestão</div>
+          <div class="num">3.15 → 3.24</div>
+          <div class="delta up">▲ +0.09 no ciclo</div>
+        </div>
+        <div class="card kpi">
+          <div class="lbl">2º EM · Relacionamento e Liderança</div>
+          <div class="num">3.05 → 3.38</div>
+          <div class="delta up">▲ +0.33 no ciclo</div>
+        </div>
+        <div class="card kpi">
+          <div class="lbl">Respondentes 1º EM (inicial → final)</div>
+          <div class="num">261 → 162</div>
+          <div class="delta" style="color:var(--pink);">queda de 38% de resposta</div>
+        </div>
+        <div class="card kpi">
+          <div class="lbl">Respondentes 2º EM (diag → som)</div>
+          <div class="num">182 → 78</div>
+          <div class="delta" style="color:var(--pink);">queda de 57% de resposta</div>
+        </div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card">
+          <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">Score composto por ciclo e praça</h3>
+          <select id="pracaFilter" style="margin-bottom:8px;">
+            <option value="geral">Todas as praças</option>
+            <option value="São Paulo">São Paulo</option>
+            <option value="Rio de Janeiro">Rio de Janeiro</option>
+            <option value="Belo Horizonte">Belo Horizonte</option>
+            <option value="São José dos Campos">São José dos Campos</option>
+          </select>
+          <canvas id="chartEvolucao" height="220"></canvas>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 10px; font-size:14px; color:var(--navy);">Esperado pelo Projeto Pedagógico</h3>
+          <div id="expectedBox"></div>
+        </div>
+      </div>
+      <div class="footnote">
+        Fonte: autoavaliações inicial/final (1º EM) e diagnóstica/somativa (2º EM), 4 praças. Essa visão é por cohort porque a autoavaliação não tem RA — é o que o painel individual ao lado já resolve pra SP.
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MÓDULO B ===================== -->
+  <section class="panel" id="panel-b">
+    <div class="lede">
+      <div>
+        <h2>Radar de prontidão para o comitê <span class="tag real">engajamento real</span> <span class="tag demo">acadêmico simulado</span></h2>
+        <p>Mesmos 3 alunos do módulo 1, agora como card de comitê: cruza engajamento real (oficina, Fala Aí, Mão na Massa) com nota acadêmica simulada e indicação de área via Guia de Carreiras. Formato pronto — falta só a fonte real de nota pra virar produção.</p>
+      </div>
+    </div>
+
+    <div class="grid cols-3" id="studentCards"></div>
+
+    <div class="card" style="margin-top:18px;">
+      <h3 style="margin:0 0 10px; font-size:14px; color:var(--navy);">Áreas do Guia de Carreiras usadas na indicação</h3>
+      <table>
+        <thead><tr><th>Área</th><th>Cursos mapeados</th><th>Exemplo de IES com IGC/CPC 5</th></tr></thead>
+        <tbody>
+          <tr><td>Exatas</td><td>242</td><td>UFMG, USP, UNICAMP</td></tr>
+          <tr><td>Tecnologia</td><td>131</td><td>ITA, IME, Inteli</td></tr>
+          <tr><td>Humanas</td><td>51</td><td>FGV-RJ, FGV-SP, PUC-Rio</td></tr>
+          <tr><td>Medicina</td><td>28</td><td>USP, UFMG, UNIFESP</td></tr>
+        </tbody>
+      </table>
+      <div class="footnote">Fonte: Guia de Carreiras Recomendadas 2026 (454 cursos cadastrados).</div>
+    </div>
+  </section>
+
+  <!-- ===================== MÓDULO C ===================== -->
+  <section class="panel" id="panel-c">
+    <div class="lede">
+      <div>
+        <h2>Alerta de retenção <span class="tag real">dado real · Ciclo 1 SP</span></h2>
+        <p>Primeira versão de verdade: cruza participação na oficina/Fala Aí com entrega do Mão na Massa do Ciclo 1, pra achar aluno com sinal duplo de desengajamento antes que vire evasão. Só cobre São Paulo e só o Ciclo 1, que é o único fechado até agora.</p>
+      </div>
+    </div>
+
+    <div class="grid cols-4" style="margin-bottom:18px;">
+      <div class="card kpi">
+        <div class="lbl">Alunos avaliados (Ciclo 1, SP)</div>
+        <div class="num">291</div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Risco de entrega (Mão na Massa)</div>
+        <div class="num" style="color:var(--pink);">87</div>
+        <div class="delta" style="color:var(--pink);">30% dos alunos</div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Risco de participação (oficina/Fala Aí)</div>
+        <div class="num" style="color:var(--pink);">6</div>
+        <div class="delta" style="color:var(--pink);">2% dos alunos</div>
+      </div>
+      <div class="card kpi">
+        <div class="lbl">Risco duplo (os dois ao mesmo tempo)</div>
+        <div class="num" style="color:var(--pink);">1</div>
+        <div class="delta">sinal mais forte de evasão</div>
+      </div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="card">
+        <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">% de risco de entrega por escola</h3>
+        <canvas id="chartRiscoEscola" height="240"></canvas>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 10px; font-size:14px; color:var(--navy);">Casos de risco de participação (Ciclo 1)</h3>
+        <table>
+          <thead><tr><th>Aluno</th><th>Orientador</th><th>Escola</th></tr></thead>
+          <tbody id="riscoParticipacaoTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h3 style="margin:0 0 4px; font-size:14px; color:var(--navy);">O que ainda falta pra esse módulo virar produção</h3>
+      <ul class="req-list" style="margin-top:10px;">
+        <li><span class="dot"></span> Presença das outras 3 praças (RJ, BH, SJC) — hoje só temos SP</li>
+        <li><span class="dot"></span> Ciclo 2 fechado (hoje ainda em andamento) e Ciclos 3 e 4, pra virar série e não foto única</li>
+        <li><span class="dot"></span> Nota acadêmica real, pra cruzar queda de engajamento com queda de nota</li>
+      </ul>
+    </div>
+
+    <div class="footnote">Fonte: Lista de Presença Ciclos SP, aba Ciclo 1. Risco de entrega = Soma "Não entregou" ou "Muito inicial". Risco de participação = "Demonstrou desinteresse", "Interferiu negativamente" ou "Ausente" na oficina ou no Fala Aí.</div>
+  </section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ===================== DADOS REAIS (autoavaliações + guia de carreiras) =====================
+const data1EM = {
+  inicial: {overall:3.15, porPraca:{"São Paulo":3.17,"Rio de Janeiro":3.08,"Belo Horizonte":3.09,"São José dos Campos":3.36}},
+  final:   {overall:3.24, porPraca:{"São Paulo":3.28,"Rio de Janeiro":3.26,"Belo Horizonte":3.08,"São José dos Campos":3.39}}
+};
+const data2EM = {
+  diag: {overall:3.05, porPraca:{"São Paulo":3.08,"Rio de Janeiro":3.04,"Belo Horizonte":3.02,"São José dos Campos":3.06}},
+  som:  {overall:3.38, porPraca:{"São Paulo":3.40,"Rio de Janeiro":3.45,"Belo Horizonte":3.16,"São José dos Campos":3.46}}
+};
+
+const expectativas = {
+  "1EM": {
+    eixo: "Autonomia e Autogestão (15-16 anos)",
+    texto: "Maior independência na gestão da rotina acadêmica, priorização autônoma de tarefas e resiliência para transformar dificuldade em aprendizado, buscando ajuda quando necessário."
+  },
+  "2EM": {
+    eixo: "Relacionamento e Liderança / Protagonismo (16-17 anos)",
+    texto: "Papéis mais proativos em projetos, mobilização de colegas em torno de objetivos comuns, resolução colaborativa de conflitos e maior clareza sobre os próprios próximos passos acadêmicos."
+  }
+};
+
+let ctxChart;
+function renderChart(praca){
+  const d1 = praca==='geral' ? data1EM : {inicial:{overall:data1EM.inicial.porPraca[praca]}, final:{overall:data1EM.final.porPraca[praca]}};
+  const d2 = praca==='geral' ? data2EM : {diag:{overall:data2EM.diag.porPraca[praca]}, som:{overall:data2EM.som.porPraca[praca]}};
+
+  const v1i = praca==='geral'? data1EM.inicial.overall : data1EM.inicial.porPraca[praca];
+  const v1f = praca==='geral'? data1EM.final.overall : data1EM.final.porPraca[praca];
+  const v2d = praca==='geral'? data2EM.diag.overall : data2EM.diag.porPraca[praca];
+  const v2s = praca==='geral'? data2EM.som.overall : data2EM.som.porPraca[praca];
+
+  document.getElementById('kpi-1em').textContent = v1i.toFixed(2)+' → '+v1f.toFixed(2);
+  document.getElementById('kpi-1em-delta').textContent = '▲ '+(v1f-v1i>=0?'+':'')+(v1f-v1i).toFixed(2)+' no ciclo';
+  document.getElementById('kpi-2em').textContent = v2d.toFixed(2)+' → '+v2s.toFixed(2);
+  document.getElementById('kpi-2em-delta').textContent = '▲ '+(v2s-v2d>=0?'+':'')+(v2s-v2d).toFixed(2)+' no ciclo';
+
+  if(ctxChart) ctxChart.destroy();
+  const el = document.getElementById('chartEvolucao');
+  ctxChart = new Chart(el, {
+    type: 'line',
+    data: {
+      labels: ['Início do ciclo', 'Fim do ciclo'],
+      datasets: [
+        { label:'1º EM · Autonomia e Autogestão', data:[v1i, v1f], borderColor:'#008ED3', backgroundColor:'#008ED3', tension:.3, pointRadius:5 },
+        { label:'2º EM · Relacionamento e Liderança', data:[v2d, v2s], borderColor:'#ED2D67', backgroundColor:'#ED2D67', tension:.3, pointRadius:5 }
+      ]
+    },
+    options: {
+      plugins:{ legend:{display:false} },
+      scales:{ y:{ min:2.5, max:4, ticks:{stepSize:.5} } }
+    }
+  });
+}
+
+document.getElementById('pracaFilter').addEventListener('change', e => renderChart(e.target.value));
+renderChart('geral');
+
+document.getElementById('expectedBox').innerHTML = `
+  <div style="margin-bottom:14px;">
+    <div style="font-size:12px; font-weight:700; color:var(--blue); text-transform:uppercase; letter-spacing:.4px;">${expectativas['1EM'].eixo}</div>
+    <div style="font-size:13px; color:var(--ink); line-height:1.5; margin-top:4px;">${expectativas['1EM'].texto}</div>
+  </div>
+  <div>
+    <div style="font-size:12px; font-weight:700; color:var(--pink); text-transform:uppercase; letter-spacing:.4px;">${expectativas['2EM'].eixo}</div>
+    <div style="font-size:13px; color:var(--ink); line-height:1.5; margin-top:4px;">${expectativas['2EM'].texto}</div>
+  </div>
+  <div class="footnote" style="margin-top:14px;">Fonte: Projeto Pedagógico Ismart, mapa de competências por faixa etária.</div>
+`;
+
+// ===================== MÓDULO B: cards de exemplo =====================
+const alunosExemplo = [
+  {
+    nome: "Aluno exemplo #A1", serie:"3ª série EM", escola:"Escola parceira · SP", rank:"#1",
+    area:"Exatas", curso:"Engenharia (UFMG · IGC 5)",
+    eixos:[["Aprendizagem",88,"#008ED3"],["Autonomia",82,"#00BCF2"],["Liderança",74,"#ED2D67"],["Protagonismo",90,"#924A7C"]],
+    carga:"moderada", cargaClasse:"carga-media",
+    leitura:"Direção clara e consistente com a área indicada. Ponto de atenção: reserva emocional moderada, vale checar antes do comitê."
+  },
+  {
+    nome: "Aluno exemplo #A2", serie:"3ª série EM", escola:"Escola parceira · RJ", rank:"#2",
+    area:"Tecnologia", curso:"Ciência da Computação (ITA · IGC 5)",
+    eixos:[["Aprendizagem",91,"#008ED3"],["Autonomia",95,"#00BCF2"],["Liderança",68,"#ED2D67"],["Protagonismo",71,"#924A7C"]],
+    carga:"baixa", cargaClasse:"carga-baixa",
+    leitura:"Autonomia muito acima da média do cohort. Liderança um pouco abaixo do esperado pra faixa etária, mas sem sinal de risco."
+  },
+  {
+    nome: "Aluno exemplo #A3", serie:"2ª série EM", escola:"Escola parceira · BH", rank:"#3",
+    area:"Humanas", curso:"Direito (UFMG · IGC 5)",
+    eixos:[["Aprendizagem",76,"#008ED3"],["Autonomia",65,"#00BCF2"],["Liderança",89,"#ED2D67"],["Protagonismo",84,"#924A7C"]],
+    carga:"alta", cargaClasse:"carga-alta",
+    leitura:"Perfil de liderança forte e alinhado à área. Carga alta: autocobrança relatada em autoavaliação, indicar acompanhamento antes do comitê."
+  }
+];
+
+document.getElementById('studentCards').innerHTML = alunosExemplo.map(a => `
+  <div class="student-card">
+    <div class="head">
+      <div>
+        <h4>${a.nome}</h4>
+        <div class="meta">${a.serie} · ${a.escola}</div>
+      </div>
+      <div class="rank">${a.rank}</div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <span class="chip area">${a.area} · ${a.curso}</span>
+      <span class="chip ${a.cargaClasse}">Carga: ${a.carga}</span>
+    </div>
+    ${a.eixos.map(([nome,val,cor]) => `
+      <div class="mini-axis">
+        <span style="width:78px;">${nome}</span>
+        <div class="track"><div class="fill" style="width:${val}%; background:${cor};"></div></div>
+        <span style="width:28px; text-align:right;">${val}</span>
+      </div>
+    `).join('')}
+    <div class="reading">${a.leitura}</div>
+  </div>
+`).join('');
+
+// ===================== SUBTABS MÓDULO A =====================
+document.querySelectorAll('.subtab').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.subtab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sub-individual').style.display = btn.dataset.sub==='individual' ? 'block':'none';
+    document.getElementById('sub-praca').style.display = btn.dataset.sub==='praca' ? 'block':'none';
+  });
+});
+
+// ===================== CALENDÁRIO PDEB 2026 POR SÉRIE (fonte: Calendário Acadêmico) =====================
+const calendario = {
+  "1º EM": ["Adaptação","Autoconhecimento","Consciência e Cuidado","Explorando possibilidades"],
+  "2º EM": ["Protagonismo e Liderança","Criatividade e Inovação","Carreira e Impacto Social","Planejamento e Propósito"]
+};
+
+// ===================== ALUNOS REAIS (fonte: Lista de Presença Ciclos SP) =====================
+const alunos = {
+  eriana: {
+    nome:"Eriana Paula Loreana Narvaez Itriago", turma:"1º EM", escola:"Rio Branco · Higienópolis", orientador:"Dafny Almeida",
+    area:"Exatas", curso:"Engenharia (UFMG · IGC 5)", carga:"baixa", cargaClasse:"carga-baixa",
+    ciclos:[
+      {n:1, oficina:"Contribuiu com perguntas, ideias ou respostas.", falaai:"Contribuiu com perguntas, ideias ou respostas.", entregou:true, soma:"Muito consistente"},
+      {n:2, entregou:true, soma:"Muito consistente"},
+      {n:3, status:"pendente"}, {n:4, status:"pendente"}
+    ],
+    academico:[
+      {ano:2023, escola:7.2, pu:6.6}, {ano:2024, escola:7.6, pu:7.0}, {ano:2025, escola:8.1, pu:7.6}, {ano:2026, escola:8.6, pu:8.2}
+    ],
+    leitura:"Engajamento máximo nos dois ciclos fechados e trajetória acadêmica em alta constante. Perfil pronto pra indicação de área forte no comitê."
+  },
+  joaopedro: {
+    nome:"João Pedro Pinheiro da Silva", turma:"2º EM", escola:"Móbile", orientador:"Adrilene Sales",
+    area:"Humanas", curso:"Administração (FGV-SP · IGC 5)", carga:"moderada", cargaClasse:"carga-media",
+    ciclos:[
+      {n:1, oficina:"Prestou atenção e acompanhou, mas não falou.", falaai:"Contribuiu com perguntas, ideias ou respostas.", entregou:true, soma:"Consistente"},
+      {n:2, entregou:false, soma:"Não entregou"},
+      {n:3, status:"pendente"}, {n:4, status:"pendente"}
+    ],
+    academico:[
+      {ano:2023, escola:7.0, pu:6.8}, {ano:2024, escola:7.3, pu:6.9}, {ano:2025, escola:6.6, pu:6.3}, {ano:2026, escola:5.9, pu:5.7}
+    ],
+    leitura:"Queda dupla: não entregou o Mão na Massa do Ciclo 2 e a nota simulada também vem caindo desde 2025. Vale um check do orientador antes do próximo ciclo."
+  },
+  laura: {
+    nome:"Laura Rodrigues Queiroz da Silva", turma:"2º EM", escola:"Bandeirantes", orientador:"Cibele Pires",
+    area:"a definir", curso:"indicação em aberto", carga:"alta", cargaClasse:"carga-alta",
+    ciclos:[
+      {n:1, oficina:"Demonstrou desinteresse, apatia ou distração.", falaai:"Contribuiu com perguntas, ideias ou respostas.", entregou:true, soma:"Parcial"},
+      {n:2, entregou:false, soma:"Não entregou"},
+      {n:3, status:"pendente"}, {n:4, status:"pendente"}
+    ],
+    academico:[
+      {ano:2023, escola:6.4, pu:6.0}, {ano:2024, escola:5.9, pu:5.5}, {ano:2025, escola:5.2, pu:4.9}, {ano:2026, escola:4.6, pu:4.3}
+    ],
+    leitura:"Risco de participação no Ciclo 1 (desinteresse na oficina) somado a queda acadêmica simulada consistente desde 2023. Candidata a acompanhamento prioritário, não a indicação de área ainda."
+  }
+};
+
+function somaLabel(s){
+  if(!s) return {t:'—', c:'pend'};
+  if(s==='Muito consistente' || s==='Consistente') return {t:s, c:'entregou'};
+  if(s==='Parcial' || s==='Muito inicial') return {t:s, c:'parcial'};
+  return {t:s, c:'nao'};
+}
+
+let chartAcad;
+function renderAluno(key){
+  const a = alunos[key];
+  document.getElementById('alunoHeader').innerHTML = `
+    <div class="aluno-head">
+      <div>
+        <h3>${a.nome}</h3>
+        <div class="meta">${a.turma} · ${a.escola} · orientador(a) ${a.orientador}</div>
+      </div>
+      <div>
+        <span class="chip area">${a.area}${a.curso!=='indicação em aberto' ? ' · '+a.curso : ''}</span>
+        <span class="chip ${a.cargaClasse}">Carga: ${a.carga}</span>
+      </div>
+    </div>
+    <div class="reading">${a.leitura}</div>
+  `;
+
+  document.getElementById('ciclosTimeline').innerHTML = a.ciclos.map(c => {
+    const tema = calendario[a.turma][c.n-1];
+    if(c.status==='pendente'){
+      return `<div class="ciclo-row">
+        <div class="ciclo-num pend">${c.n}</div>
+        <div class="ciclo-body"><div class="tema">${tema} <span class="status-chip pend">ainda não realizado</span></div></div>
+      </div>`;
+    }
+    const sl = somaLabel(c.soma);
+    return `<div class="ciclo-row">
+      <div class="ciclo-num">${c.n}</div>
+      <div class="ciclo-body">
+        <div class="tema">${tema} <span class="status-chip ${sl.c}">${sl.t}</span></div>
+        <div class="detail">Oficina: ${c.oficina || '—'}<br>Fala Aí: ${c.falaai || '—'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(chartAcad) chartAcad.destroy();
+  chartAcad = new Chart(document.getElementById('chartAcademico'), {
+    type:'line',
+    data:{
+      labels: a.academico.map(x=>x.ano),
+      datasets:[
+        {label:'Média escola', data:a.academico.map(x=>x.escola), borderColor:'#008ED3', backgroundColor:'#008ED3', tension:.3, pointRadius:5},
+        {label:'Prova Única', data:a.academico.map(x=>x.pu), borderColor:'#ED2D67', backgroundColor:'#ED2D67', tension:.3, pointRadius:5, borderDash:[5,3]}
+      ]
+    },
+    options:{ scales:{ y:{min:3, max:10} }, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:11}}}} }
+  });
+}
+document.getElementById('alunoFilter').addEventListener('change', e => renderAluno(e.target.value));
+renderAluno('eriana');
+
+// ===================== MÓDULO B: cards a partir dos mesmos 3 alunos reais =====================
+function pctFromSoma(s){
+  const map = {"Muito consistente":95, "Consistente":75, "Parcial":50, "Muito inicial":25, "Não entregou":10};
+  return map[s] ?? 50;
+}
+function pctFromParticipacao(txt){
+  const map = {
+    "Se destacou ou trouxe contribuições aprofundadas.":95,
+    "Contribuiu com perguntas, ideias ou respostas.":78,
+    "Prestou atenção e acompanhou, mas não falou.":55,
+    "Demonstrou desinteresse, apatia ou distração.":30,
+    "Interferiu negativamente ou atrapalhou a dinâmica.":15,
+    "Ausente.":5
+  };
+  return map[txt] ?? 50;
+}
+
+document.getElementById('studentCards').innerHTML = Object.values(alunos).map(a => {
+  const c1 = a.ciclos[0];
+  const engajamento = Math.round((pctFromParticipacao(c1.oficina)+pctFromParticipacao(c1.falaai))/2);
+  const entrega = pctFromSoma(c1.soma);
+  const academico = Math.round((a.academico.at(-1).escola/10)*100);
+  const rank = a.leitura.includes('Risco') || a.leitura.includes('acompanhamento') ? 'atenção' : (engajamento>85?'#1':'#2');
+  return `
+  <div class="student-card">
+    <div class="head">
+      <div>
+        <h4>${a.nome}</h4>
+        <div class="meta">${a.turma} · ${a.escola}</div>
+      </div>
+      <div class="rank">${rank}</div>
+    </div>
+    <div style="margin-bottom:10px;">
+      <span class="chip area">${a.area}${a.curso!=='indicação em aberto' ? ' · '+a.curso : ''}</span>
+      <span class="chip ${a.cargaClasse}">Carga: ${a.carga}</span>
+    </div>
+    <div class="mini-axis"><span style="width:78px;">Engajamento</span><div class="track"><div class="fill" style="width:${engajamento}%; background:#008ED3;"></div></div><span style="width:28px; text-align:right;">${engajamento}</span></div>
+    <div class="mini-axis"><span style="width:78px;">Entrega MNM</span><div class="track"><div class="fill" style="width:${entrega}%; background:#00BCF2;"></div></div><span style="width:28px; text-align:right;">${entrega}</span></div>
+    <div class="mini-axis"><span style="width:78px;">Acadêmico</span><div class="track"><div class="fill" style="width:${academico}%; background:#924A7C;"></div></div><span style="width:28px; text-align:right;">${academico}</span></div>
+    <div class="reading">${a.leitura}</div>
+  </div>`;
+}).join('');
+
+// ===================== MÓDULO C: risco real (Ciclo 1 SP) =====================
+new Chart(document.getElementById('chartRiscoEscola'), {
+  type:'bar',
+  data:{
+    labels:['Beacon School','Rio Branco Higienópolis','Magno','Uirapuru','Stockler','Bandeirantes','Lourenço Castanho ABV'],
+    datasets:[{
+      label:'% risco de entrega',
+      data:[75.0,57.1,46.3,41.2,33.3,14.1,5.0],
+      backgroundColor:['#ED2D67','#F1655D','#F1655D','#FFB577','#FFB577','#00BCF2','#8EC5B1']
+    }]
+  },
+  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{max:100}} }
+});
+
+document.getElementById('riscoParticipacaoTable').innerHTML = [
+  ["Julia Santos do Nascimento","Cibele Pires","Bandeirantes"],
+  ["Laura Rodrigues Queiroz da Silva","Cibele Pires","Bandeirantes"],
+  ["Manuela Miura de Oliveira","Cibele Pires","Bandeirantes"],
+  ["Pietro João Ferreira da Silva","Cibele Pires","Bandeirantes"],
+  ["Pyettro Alexandre Felix Correa","Cibele Pires","Bandeirantes"],
+  ["Mayara Ferreira Moura","Lucas Aprile","Rio Branco · Granja Viana"]
+].map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+
+// ===================== NAV =====================
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.panel).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
