@@ -490,12 +490,12 @@ function renderFicha(key){
 
   if(chartRadar) chartRadar.destroy();
   chartRadar = new Chart(document.getElementById('chartCompetencias'), {
-    type:'radar',
+    type:'line',
     data:{ labels: HABILIDADES.map(function(h){ return h.lbl; }), datasets:[
-      {label:'Ciclo '+ultimoCiclo.n+' (mais recente)', data: HABILIDADES.map(function(h){ return ultimo[h.key]; }), backgroundColor:'rgba(0,142,211,0.16)', borderColor:'#008ED3', borderWidth:2, pointBackgroundColor:'#002561'},
-      {label:'Esperado mínimo', data: HABILIDADES.map(function(){ return 3; }), backgroundColor:'rgba(0,0,0,0)', borderColor:'#B9C2D0', borderDash:[4,4], pointRadius:0}
+      {label:'Ciclo '+ultimoCiclo.n+' (mais recente)', data: HABILIDADES.map(function(h){ return ultimo[h.key]; }), borderColor:'#008ED3', backgroundColor:'rgba(0,142,211,0.1)', fill:true, tension:.3, pointRadius:5, pointBackgroundColor:'#002561'},
+      {label:'Esperado mínimo', data: HABILIDADES.map(function(){ return 3; }), borderColor:'#B9C2D0', borderDash:[4,4], pointRadius:0, fill:false}
     ]},
-    options:{ scales:{ r:{min:0, max:4, ticks:{stepSize:1, backdropColor:'transparent'}, grid:{color:'#E6ECF3'}, pointLabels:{color:'#5A6B82', font:{size:11}}} }, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10.5}}}} }
+    options:{ scales:{ y:{min:0, max:4, ticks:{stepSize:1}} }, plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10.5}}}} }
   });
 }
 
