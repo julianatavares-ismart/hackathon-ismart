@@ -43,7 +43,7 @@
   .grid.cols-2{grid-template-columns:1.3fr 1fr;}
   .grid.sidebar-main{grid-template-columns:250px 1fr;}
   @media(max-width:980px){ .grid.cols-4,.grid.cols-3,.grid.cols-2,.grid.sidebar-main{grid-template-columns:1fr;} }
-  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; box-shadow:0 18px 40px -32px rgba(0,37,97,.35);}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px 22px; box-shadow:0 2px 10px -6px rgba(0,37,97,.12);}
   .kpi{border-top:3px solid var(--blue);}
   .kpi .num{font-family:'Montserrat',sans-serif; font-size:28px; font-weight:800; color:var(--navy);}
   .kpi .lbl{font-size:11.5px; color:var(--muted); margin-top:2px;}
@@ -74,6 +74,13 @@
   select{font-family:'Lato',sans-serif; font-size:13px; padding:8px 12px; border-radius:8px; border:1px solid var(--line); background:#fff; color:var(--ink);}
   .subtab{font-family:'Montserrat',sans-serif; font-weight:600; font-size:12.5px; padding:8px 14px; border-radius:8px; border:none; background:var(--softchip); color:var(--muted); cursor:pointer;}
   .subtab.active{background:var(--navy); color:#fff;}
+  .subtab-portfolio{font-family:'Montserrat',sans-serif; font-weight:600; font-size:12.5px; padding:8px 14px; border-radius:8px; border:none; background:var(--softchip); color:var(--muted); cursor:pointer;}
+  .subtab-portfolio.active{background:var(--navy); color:#fff;}
+  .portfolio-grid-table{width:100%; border-collapse:collapse; font-size:12px;}
+  .portfolio-grid-table th{text-align:left; font-family:'Montserrat',sans-serif; font-size:10px; text-transform:uppercase; color:var(--muted2); padding:8px; border-bottom:2px solid var(--divider);}
+  .portfolio-grid-table td{padding:8px; border-bottom:1px solid var(--divider); text-align:center;}
+  .portfolio-grid-table td.nome-col{text-align:left; font-weight:700; color:var(--navy);}
+  .pill-mini{display:inline-block; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:700;}
   .foto-frame{width:64px; height:64px; border-radius:12px; border:2px dashed var(--skylight); background:var(--skypale); color:var(--navy); display:flex; align-items:center; justify-content:center; font-family:'Montserrat',sans-serif; font-weight:800; font-size:18px; flex-shrink:0;}
   .foto-frame-lg{width:88px; height:88px; border-radius:14px; border:2px dashed var(--skylight); background:var(--skypale); color:var(--navy); display:flex; align-items:center; justify-content:center; font-family:'Montserrat',sans-serif; font-weight:800; font-size:24px; flex-shrink:0;}
   .aluno-head{display:flex; gap:14px; align-items:center; flex-wrap:wrap;}
@@ -277,6 +284,20 @@
 
   <section class="panel" id="panel-b">
     <div class="lede"><div><h2>Radar de prontidão</h2><p>Desempenho por competência, status de prontidão pro próximo projeto e aprovação de EB e ES.</p></div></div>
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+      <select id="serieProntidaoFilter">
+        <option value="todas">Todas as séries</option>
+        <option value="1º EM">1º EM</option>
+        <option value="2º EM">2º EM</option>
+        <option value="3º EM">3º EM</option>
+      </select>
+      <select id="statusProntidaoFilter">
+        <option value="todos">Todos os status</option>
+        <option value="prontidao-nao">Ainda não pronto</option>
+        <option value="prontidao-dev">Em desenvolvimento</option>
+        <option value="prontidao-pronto">Pronto para o próximo projeto</option>
+      </select>
+    </div>
     <div class="grid cols-3" id="studentCards"></div>
     <div class="card" style="margin-top:18px;">
       <h3 style="margin:0 0 10px; font-size:14px; color:var(--navy);">Áreas do Guia de Carreiras usadas na indicação</h3>
@@ -287,18 +308,25 @@
 
   <section class="panel" id="panel-e">
     <div class="lede">
-      <div><h2>Portfólio do aluno</h2><p>Todas as entregas do Mão na Massa do aluno selecionado, ciclo a ciclo, com o feedback recebido.</p></div>
-      <select id="portfolioAlunoFilter"></select>
+      <div><h2>Portfólio do aluno</h2><p>Todas as entregas do Mão na Massa, ciclo a ciclo, com o feedback recebido.</p></div>
+      <div style="display:flex; gap:8px;">
+        <button class="subtab-portfolio active" data-portfoliosub="geral">Visão geral (todos)</button>
+        <button class="subtab-portfolio" data-portfoliosub="individual">Aluno individual</button>
+      </div>
     </div>
-    <div id="portfolioConteudo"></div>
+    <div id="portfolioGeral"></div>
+    <div id="portfolioIndividualWrap" style="display:none;">
+      <div style="margin-bottom:16px;"><select id="portfolioAlunoFilter"></select></div>
+      <div id="portfolioConteudo"></div>
+    </div>
   </section>
 
   <section class="panel" id="panel-c">
     <div class="lede"><div><h2>Radar de alerta</h2><p>Cruza participação e entrega do Mão na Massa do Ciclo 1 pra classificar o aluno num tier de cuidado, antes que vire evasão.</p></div></div>
     <div class="grid cols-4" style="margin-bottom:18px;">
       <div class="card kpi" style="border-top-color:#00BCF2;"><div class="lbl">Alunos avaliados (Ciclo 1, SP)</div><div class="num">291</div></div>
-      <div class="card kpi" style="border-top-color:var(--pink);"><div class="lbl">Tier 3C · Cuidado e Acadêmico</div><div class="num" style="color:var(--pink);">87</div><div class="delta" style="color:var(--pink);">30% dos alunos</div></div>
-      <div class="card kpi" style="border-top-color:#8A5300;"><div class="lbl">Sinais de baixa participação</div><div class="num" style="color:#8A5300;">6</div><div class="delta" style="color:#8A5300;">2% dos alunos</div></div>
+      <div class="card kpi" style="border-top-color:var(--pink);"><div class="lbl">Tier 3C · Cuidado e Acadêmico</div><div class="num" style="color:var(--pink);">14</div><div class="delta" style="color:var(--pink);">5% dos alunos</div></div>
+      <div class="card kpi" style="border-top-color:#8A5300;"><div class="lbl">Sinais de baixa participação</div><div class="num" style="color:#8A5300;">3</div><div class="delta" style="color:#8A5300;">1% dos alunos</div></div>
       <div class="card kpi" style="border-top-color:var(--muted2);"><div class="lbl">Tier 4 · Ideação sensível</div><div class="num" style="color:var(--muted);">—</div><div class="delta">avaliação humana, fora deste painel</div></div>
     </div>
     <div class="card" style="margin-bottom:18px; background:var(--skypale);">
@@ -355,7 +383,7 @@ function irPara(panel){
   const btn = document.querySelector('nav button[data-panel="'+panel+'"]');
   if(btn) btn.classList.add('active');
   document.getElementById('panel-'+panel).classList.add('active');
-  if(panel==='e') renderPortfolio(document.getElementById('portfolioAlunoFilter').value || alunoAtualKey);
+  if(panel==='e') renderPortfolioGeral();
 }
 document.querySelectorAll('nav button').forEach(function(btn){ btn.addEventListener('click', function(){ irPara(btn.dataset.panel); }); });
 
@@ -401,9 +429,7 @@ function renderAluno(key){
 
   document.getElementById('alunoHeader').innerHTML =
     '<div class="aluno-head"><div class="foto-frame">'+iniciais(a.nome)+'</div>' +
-    '<div><h3>'+a.nome+'</h3><div class="meta">'+a.turma+' · '+a.escola+' · orientador(a) '+a.orientador+'</div>' +
-    '<div style="margin-top:6px;"><span class="chip area">'+a.area+(a.curso!=='indicação em aberto' ? ' · '+a.curso : '')+'</span>' +
-    '<span class="chip '+a.cargaClasse+'">Carga: '+a.carga+'</span></div></div></div>' +
+    '<div><h3>'+a.nome+'</h3><div class="meta">'+a.turma+' · '+a.escola+' · orientador(a) '+a.orientador+'</div></div></div>' +
     '<div class="reading">'+a.leitura+'</div>';
 
   document.getElementById('ciclosTimeline').innerHTML = a.ciclos.map(function(c){
@@ -581,7 +607,11 @@ function toggleDecisao(key, tipo){
 }
 
 function renderStudentCards(){
+  const serieSel = document.getElementById('serieProntidaoFilter').value;
+  const statusSel = document.getElementById('statusProntidaoFilter').value;
   document.getElementById('studentCards').innerHTML = Object.keys(alunos)
+    .filter(function(key){ return serieSel==='todas' || alunos[key].turma===serieSel; })
+    .filter(function(key){ return statusSel==='todos' || prontidaoInfo(key).cls===statusSel; })
     .sort(function(a,b){ return alunos[a].nome.localeCompare(alunos[b].nome,'pt-BR'); })
     .map(function(key){
       const a = alunos[key];
@@ -594,8 +624,7 @@ function renderStudentCards(){
       const dec = decisoes[key] || {eb:false, es:false};
       return '<div class="student-card"><div class="head"><div><h4>'+a.nome+'</h4>' +
         '<div class="meta">'+a.turma+' · '+a.escola+'</div></div><span class="prontidao-badge '+pr.cls+'">'+pr.txt+'</span></div>' +
-        '<div style="margin-bottom:6px;"><span class="chip area">'+a.area+(a.curso!=='indicação em aberto' ? ' · '+a.curso : '')+'</span>' +
-        '<span class="chip '+a.cargaClasse+'">Carga: '+a.carga+'</span></div>' +
+        '<div style="margin-bottom:6px;"><span class="chip area">'+a.area+(a.curso!=='indicação em aberto' ? ' · '+a.curso : '')+'</span></div>' +
         '<div class="nota-linha">Nota mais recente: '+pt(notaFinal)+'/10</div>' +
         '<div class="mini-axis"><span style="width:78px;">Engajamento</span><div class="track"><div class="fill" style="width:'+engajamento+'%; background:#008ED3;"></div></div><span style="width:28px; text-align:right;">'+engajamento+'</span></div>' +
         '<div class="mini-axis"><span style="width:78px;">Entrega MNM</span><div class="track"><div class="fill" style="width:'+entrega+'%; background:#00BCF2;"></div></div><span style="width:28px; text-align:right;">'+entrega+'</span></div>' +
@@ -609,8 +638,8 @@ function renderStudentCards(){
 
 new Chart(document.getElementById('chartRiscoEscola'), {
   type:'bar', data:{ labels:['Rio Branco Higienópolis','Magno','Uirapuru','Rio Branco Granja Viana','Lourenço Castanho VNC','Bandeirantes','Lourenço Castanho ABV'],
-    datasets:[{ label:'% em Tier 3C', data:[57.1,46.3,41.2,21.1,20.7,14.1,5.0], backgroundColor:['#ED2D67','#F1655D','#F1655D','#FFB577','#FFB577','#00BCF2','#8EC5B1'] }] },
-  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{max:100}} }
+    datasets:[{ label:'% em Tier 3C', data:[5.0,4.2,3.8,2.6,2.1,1.4,0.5], backgroundColor:['#ED2D67','#F1655D','#F1655D','#FFB577','#FFB577','#00BCF2','#8EC5B1'] }] },
+  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{max:8}} }
 });
 document.getElementById('riscoParticipacaoTable').innerHTML = [
   ["Julia Santos do Nascimento","Orientador(a) 1","Bandeirantes"],["Laura Rodrigues Queiroz da Silva","Orientador(a) 1","Bandeirantes"],
@@ -643,6 +672,38 @@ function renderPortfolio(key){
   }).join('');
 }
 document.getElementById('portfolioAlunoFilter').addEventListener('change', function(e){ renderPortfolio(e.target.value); });
+
+function renderPortfolioGeral(){
+  const nomes = Object.keys(alunos).sort(function(a,b){ return alunos[a].nome.localeCompare(alunos[b].nome,'pt-BR'); });
+  const maxCiclos = 4;
+  let html = '<div class="card"><table class="portfolio-grid-table"><thead><tr><th>Aluno</th><th>Série</th>';
+  for(let i=1;i<=maxCiclos;i++){ html += '<th>Ciclo '+i+'</th>'; }
+  html += '</tr></thead><tbody>';
+  nomes.forEach(function(key){
+    const a = alunos[key];
+    html += '<tr><td class="nome-col">'+a.nome+'</td><td>'+a.turma+'</td>';
+    a.ciclos.forEach(function(c){
+      const cls = somaClasse(c.soma);
+      const bg = cls==='entregou' ? 'var(--ok-bg)' : (cls==='parcial' ? '#FFF3D6' : 'var(--no-bg)');
+      const txt = cls==='entregou' ? 'var(--ok-txt)' : (cls==='parcial' ? '#8A5300' : 'var(--pink)');
+      html += '<td><span class="pill-mini" style="background:'+bg+'; color:'+txt+';">'+c.soma+'</span></td>';
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  document.getElementById('portfolioGeral').innerHTML = html;
+}
+
+document.querySelectorAll('.subtab-portfolio').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.subtab-portfolio').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    const isGeral = btn.dataset.portfoliosub==='geral';
+    document.getElementById('portfolioGeral').style.display = isGeral ? 'block':'none';
+    document.getElementById('portfolioIndividualWrap').style.display = isGeral ? 'none':'block';
+    if(!isGeral) renderPortfolio(alunoAtualKey);
+  });
+});
 
 // ===================== DOSSIÊ DE SELEÇÃO =====================
 const candidatos = {
@@ -688,6 +749,8 @@ function renderDossie(key){
     '</div>';
 }
 document.getElementById('candidatoFilter').addEventListener('change', function(e){ renderDossie(e.target.value); });
+document.getElementById('serieProntidaoFilter').addEventListener('change', renderStudentCards);
+document.getElementById('statusProntidaoFilter').addEventListener('change', renderStudentCards);
 
 // ===================== INICIALIZAÇÃO =====================
 const primeiraLista = popularAlunoSelect('1º EM');
